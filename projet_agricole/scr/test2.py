@@ -1,35 +1,29 @@
-from bokeh.layouts import column
-from bokeh.models import ColumnDataSource, Select, DateRangeSlider, HoverTool
-from bokeh.plotting import figure, curdoc
-import pandas as pd
+# test.py
+from map_visualsition import AgiculturalMap
+from data_manager import AgriculturalDataManager
 
-class MockDataManager:
-    def __init__(self):
-        self.monitoring_data = pd.DataFrame({
-            'date': pd.date_range(start="2025-01-01", periods=10, freq="D"),
-            'yield_value': [10, 12, 15, 13, 16, 18, 20, 19, 21, 23],
-        })
-        self.yield_history = pd.DataFrame({
-            'date': pd.date_range(start="2020-01-01", periods=10, freq="Y"),
-            'yield_value': [8, 9, 11, 10, 12, 14, 16, 15, 17, 19],
-        })
+def main():
+    # Initialiser le gestionnaire de données
+    data_manager = AgriculturalDataManager()
+    data_manager.load_data()
+    # Créer une carte agricole
+    agri_map = AgiculturalMap(data_manager)
+    
+    # Créer la carte de base
+    agri_map.create_base_map()
+    
+    # Ajouter les différentes couches (historique des rendements, NDVI, carte de chaleur des risques)
+    agri_map.add_yield_history_layer()
+    agri_map.add_current_ndvi_layer()
+    agri_map.add_risk_heatmap()
+    
+    # Sauvegarder la carte
+    agri_map.save_map("agricultural_map.html")
+    
+    # Tester la fonction de tendance des rendements
+    history = data_manager.yield_history[['date', 'yield']]  # Juste un exemple de données historiques
+    trend = agri_map._create_yield_trend(history)
+    print(f"Tendance des rendements : {trend}")
 
-    def get_parcelle_options(self):
-        return ['Parcelle_1', 'Parcelle_2']
-
-    def get_date_range(self):
-        return self.monitoring_data['date'].min(), self.monitoring_data['date'].max()
-
-class AgriculturalDashboard:
-    def __init__(self, data_manager):
-        self.data_manager = data_manager
-        self.source = ColumnDataSource(data=dict(date=[], yield_value=[]))
-        self.create_yield_history_plot()
-
-    def create_yield_history_plot(self):
-        self.plot = figure(title="Historique des Rendements", x_axis_type="datetime", height=400)
-        self.plot.line(source=self.source, x="date", y="yield_value", line_width=2)
-        curdoc().add_root(column(self.plot))
-
-mock_manager = MockDataManager()
-dashboard = AgriculturalDashboard(mock_manager)
+if __name__ == "__main__":
+    main()

@@ -1,13 +1,21 @@
-from bokeh.plotting import output_file, save, show
-from dashboard import AgriculturalDashboard
-from data_manager import AgriculturalDataManager
+from bokeh.io import curdoc
+from dashboard import AgriculturalDashboard  # Importez la classe
+from data_manager import AgriculturalDataManager  # Importez votre gestionnaire de données
 
-# Initialisation
+# Charger les données avec le gestionnaire de données
 data_manager = AgriculturalDataManager()
-data_manager.load_data()  # Assure-toi que cette méthode charge correctement les données
+data_manager.load_data()
 
-# Passe l'instance de data_manager à AgriculturalDashboard
+# Initialiser le tableau de bord
 dashboard = AgriculturalDashboard(data_manager)
+
+# Créer la mise en page
+layout = dashboard.create_layout()
+
+# Ajouter la mise en page au document Bokeh
+curdoc().add_root(layout)
+curdoc().title = "Tableau de Bord Agricole"
+
 
 # Crée la mise en page
 layout = dashboard.create_layout()
@@ -20,3 +28,4 @@ print(merged_data.columns)
 stress_data = dashboard.prepare_stress_data()
 print("Données préparées pour la matrice de stress :")
 print(stress_data)
+print("Valeur de yield_history :", data_manager.yield_history)
